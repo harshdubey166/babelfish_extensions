@@ -3998,6 +3998,827 @@ CREATE OR REPLACE FUNCTION sys.openjson_with(json_string text, path text, VARIAD
 RETURNS SETOF RECORD
 AS 'babelfishpg_tsql', 'tsql_openjson_with' LANGUAGE C STRICT IMMUTABLE PARALLEL SAFE;
 
+-- CREATE OR REPLACE FUNCTION sys.openxml(
+--     idoc INTEGER,
+--     row_pattern text
+-- ) RETURNS TABLE (
+--     id int,
+--     localname text,
+--     nodetype int,
+--     namespaceuri text,
+--     textcol text
+-- ) AS $$
+-- DECLARE
+--     doc XML;
+--     attr_pattern text;
+--     original_row_pattern text;
+-- BEGIN
+--     -- Get the XML document from XMLHandleHashTable
+--     doc := xmlhandle_get_document(idoc);
+--     -- doc := '<root><child>value</child></root>'::xml;
+    
+--     attr_pattern := row_pattern || '/@*';
+--     original_row_pattern := row_pattern;
+--     IF row_pattern = '/' THEN
+--         row_pattern := row_pattern || '/*';
+--     END IF;
+    
+--     IF doc IS NULL THEN
+--         RAISE EXCEPTION 'Invalid document handle: %', idoc;
+--     END IF;
+
+--     RETURN QUERY
+--     WITH 
+--     node_data AS (
+--         SELECT 
+--             xpath_id, 
+--             l,
+--             1 AS nt,
+--             NULL AS txt,
+--             ns
+--         FROM 
+--         XMLTABLE(
+--             row_pattern
+--             PASSING doc
+--             COLUMNS 
+--                 xpath_id FOR ORDINALITY,
+--                 l TEXT PATH 'local-name(.)',
+--                 ns TEXT PATH 'namespace-uri(.)'
+--         )
+--         UNION ALL
+--         SELECT 
+--             xpath_id, 
+--             l,
+--             2 AS nt,
+--             NULL AS txt,
+--             NULL AS ns
+--         FROM
+--         XMLTABLE(
+--             attr_pattern  
+--             PASSING doc
+--             COLUMNS 
+--                 xpath_id FOR ORDINALITY,
+--                 l TEXT PATH 'local-name(.)'
+--         )
+--         UNION ALL
+--         SELECT 
+--             xpath_id, 
+--             '#text' AS l,
+--             3 AS nt,
+--             txt,
+--             NULL AS ns
+--         FROM  
+--         XMLTABLE(
+--             attr_pattern 
+--             PASSING doc
+--             COLUMNS 
+--                 xpath_id FOR ORDINALITY,
+--                 txt TEXT PATH '.'
+--         )
+--         UNION ALL
+--         SELECT 
+--             xpath_id, 
+--             '#text' AS l,
+--             3 AS nt,
+--             txt,
+--             NULL AS ns
+--         FROM
+--         XMLTABLE(
+--             row_pattern
+--             PASSING doc
+--             COLUMNS 
+--                 xpath_id FOR ORDINALITY,
+--                 txt TEXT PATH 'normalize-space(text())'
+--         )
+--         WHERE LENGTH(txt) != 0
+--     )
+--     SELECT xpath_id,l,nt,ns,txt FROM node_data
+--     ORDER BY xpath_id, nt;
+    
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+-- CREATE OR REPLACE FUNCTION sys.openxml(
+--     idoc INTEGER,
+--     row_pattern text,
+--     flags INTEGER DEFAULT 0
+-- ) RETURNS TABLE (
+--     id int,
+--     parentid int,
+--     nodetype int,
+--     localname text,
+--     prefix text,
+--     namespaceuri text,
+--     datatype text,
+--     prev int,
+--     text text
+-- ) AS $$
+-- BEGIN
+--     RETURN QUERY SELECT * FROM sys._openxml(idoc, row_pattern, flags);
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+-- CREATE OR REPLACE FUNCTION sys.openxml(
+--     idoc INTEGER,
+--     row_pattern text
+-- ) RETURNS TABLE (
+--     id int,
+--     localname text,
+--     nodetype int,
+--     namespaceuri text,
+--     textcol text
+-- ) AS $$
+-- DECLARE
+--     doc XML;
+--     attr_pattern text;
+--     original_row_pattern text;
+--     row_pattern1 text;
+--     row_pattern2 text;
+-- BEGIN
+--     -- Get the XML document from XMLHandleHashTable
+--     doc := xmlhandle_get_document(idoc);
+    
+--     original_row_pattern := row_pattern;
+--     attr_pattern := row_pattern || '//@*';
+--     IF row_pattern = '/' THEN
+--         row_pattern := row_pattern || '/*';
+--         attr_pattern := row_pattern || '/@*';
+--     END IF;
+--     row_pattern1 := row_pattern || '//*';
+--     row_pattern2 := row_pattern || ' | ' || row_pattern1;
+    
+
+--     RETURN QUERY
+--     WITH 
+--     node_data AS (
+--         SELECT 
+--             xpath_id, 
+--             l,
+--             1 AS nt,
+--             NULL AS txt,
+--             ns
+--         FROM 
+--         XMLTABLE(
+--             row_pattern2
+--             PASSING doc
+--             COLUMNS 
+--                 xpath_id FOR ORDINALITY,
+--                 l TEXT PATH 'local-name(.)',
+--                 ns TEXT PATH 'namespace-uri(.)'
+--         )
+--         UNION ALL
+--         SELECT 
+--             xpath_id, 
+--             l,
+--             2 AS nt,
+--             NULL AS txt,
+--             NULL AS ns
+--         FROM
+--         XMLTABLE(
+--             attr_pattern  
+--             PASSING doc
+--             COLUMNS 
+--                 xpath_id FOR ORDINALITY,
+--                 l TEXT PATH 'local-name(.)'
+--         )
+--         UNION ALL
+--         SELECT 
+--             xpath_id, 
+--             '#text' AS l,
+--             3 AS nt,
+--             txt,
+--             NULL AS ns
+--         FROM  
+--         XMLTABLE(
+--             attr_pattern 
+--             PASSING doc
+--             COLUMNS 
+--                 xpath_id FOR ORDINALITY,
+--                 txt TEXT PATH '.'
+--         )
+--         UNION ALL
+--         SELECT 
+--             xpath_id, 
+--             '#text' AS l,
+--             3 AS nt,
+--             txt,
+--             NULL AS ns
+--         FROM
+--         XMLTABLE(
+--             row_pattern2
+--             PASSING doc
+--             COLUMNS 
+--                 xpath_id FOR ORDINALITY,
+--                 txt TEXT PATH 'normalize-space(text())'
+--         )
+--         WHERE LENGTH(txt) != 0
+--     )
+--     SELECT xpath_id,l,nt,ns,txt FROM node_data
+--     ORDER BY xpath_id, nt;
+    
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+
+-- CREATE OR REPLACE FUNCTION sys.openxml(
+--     idoc INTEGER,
+--     row_pattern text
+-- ) RETURNS TABLE (
+--     id int,
+--     parentid int,
+--     nodetype int,
+--     localname text,
+--     prefix text,
+--     namespaceuri text,
+--     datatype text,
+--     prev int,
+--     text text
+-- ) AS $$
+-- DECLARE
+--     doc XML;
+--     attr_pattern text;
+--     row_pattern1 text;
+--     row_pattern2 text;
+--     original_row_pattern text;
+-- BEGIN
+--     -- Get the XML document from XMLHandleHashTable
+--     doc := xmlhandle_get_document(idoc);
+--     -- doc := '<root><child>value</child></root>'::xml;
+    
+--     original_row_pattern := row_pattern;
+--     attr_pattern := row_pattern || '//@*';
+--     IF row_pattern = '/' THEN
+--         row_pattern := row_pattern || '/*';
+--         attr_pattern := row_pattern || '/@*';
+--     END IF;
+--     row_pattern1 := row_pattern || '//*';
+--     row_pattern2 := row_pattern || ' | ' || row_pattern1;
+    
+--     RETURN QUERY
+--     WITH 
+-- roottbl AS (
+-- 	SELECT row_number() over() - 1 as xpath_id, l, attributeid, concat(ancestor, '[', prevsiblingcount,']', (':' || attributeid), ':', elementvalue) as pathfromroot
+-- 	FROM (
+-- 		WITH xml_data AS (
+-- 			SELECT doc AS doc
+-- 		)
+-- 		SELECT 
+-- 			l,
+-- 			ancestor,
+-- 			prevsiblingcount,
+-- 			NULL as attributeid,
+-- 			l as elementvalue
+-- 		FROM xml_data,
+-- 		XMLTABLE('//*' 
+-- 			PASSING xml_data.doc
+-- 			COLUMNS 
+-- 				l TEXT PATH 'local-name(.)',
+-- 				ancestor xml PATH 'ancestor-or-self::*',
+-- 				prevsiblingcount INT PATH 'count(preceding::*)'
+-- 		)
+-- 		UNION ALL
+-- 		SELECT 
+-- 			l,
+-- 			ancestor,
+-- 			prevsiblingcount,
+-- 			NULL as attributeid,
+-- 			concat('@', l) as elementvalue
+-- 		FROM xml_data,
+-- 		XMLTABLE('//@*' 
+-- 			PASSING xml_data.doc
+-- 			COLUMNS 
+-- 				l TEXT PATH 'local-name(.)',
+-- 				ancestor xml PATH 'ancestor-or-self::*',
+-- 				prevsiblingcount INT PATH 'count(parent::*/preceding::*)'
+-- 		)
+-- 		UNION ALL
+-- 		SELECT 
+-- 			'#text' AS l,
+-- 			ancestor,
+-- 			prevsiblingcount,
+-- 			attributeid,
+-- 			elementvalue
+-- 		FROM xml_data,
+-- 		XMLTABLE('//@*' 
+-- 			PASSING xml_data.doc
+-- 			COLUMNS 
+-- 				elementvalue TEXT PATH '.',
+-- 				attributeid TEXT PATH 'local-name(.)',
+-- 				ancestor xml PATH 'ancestor-or-self::*',
+-- 				prevsiblingcount INT PATH 'count(parent::*/preceding::*)'
+-- 		)
+-- 		UNION ALL
+-- 		SELECT 
+-- 			'#text' AS l,
+-- 			ancestor,
+-- 			prevsiblingcount,
+-- 			NULL as attributeid,
+-- 			elementvalue
+-- 		FROM xml_data,
+-- 		XMLTABLE('//*' 
+-- 			PASSING xml_data.doc
+-- 			COLUMNS
+-- 				elementvalue TEXT PATH '.',
+-- 				txt TEXT PATH 'normalize-space(text())',
+-- 				ancestor xml PATH 'ancestor-or-self::*',
+-- 				prevsiblingcount INT PATH 'count(parent::*/preceding::*)'
+-- 		)
+-- 		WHERE length(txt) != 0
+-- 	)
+-- ), 
+--  q1 AS (
+-- 	WITH xml_data AS (
+-- 		SELECT doc AS doc
+-- 	)
+-- 	SELECT 
+-- 		split_part(l, ':', -1) as l,
+-- 		CASE WHEN regexp_count(l, ':') != 1 THEN NULL ELSE split_part(l, ':', -2) END as prefix,
+-- 		parent,
+-- 		concat(parentnode, '[', parentprecedingsiblingcount,']:', parent) as parentpath,
+-- 		1 AS nt,
+-- 		NULL AS txt,
+-- 		NULL as ns,
+--         NULL as dt,
+-- 		prev1,
+-- 		concat(prevnode, '[', prevprecedingsiblingcount,']:', prev1) as prevpath,
+-- 		concat(ancestor, '[', precedingsiblingcount,']:', split_part(l, ':', -1)) as pathfromroot
+-- 	FROM xml_data,
+-- 	XMLTABLE(
+-- 		row_pattern2 
+-- 		PASSING xml_data.doc
+-- 		COLUMNS 
+-- 			l TEXT PATH 'name(.)',
+-- 			ns TEXT PATH 'namespace-uri(.)',
+-- 			parent TEXT PATH 'local-name(..)',
+-- 			prev1 TEXT PATH 'local-name(preceding-sibling::*[1])', 
+-- 			parentnode xml PATH '../ancestor-or-self::*',
+-- 			parentprecedingsiblingcount INT PATH 'count(../preceding::*)',
+-- 			prevnode xml PATH 'preceding-sibling::*[1]/ancestor-or-self::*',
+-- 			prevprecedingsiblingcount INT PATH 'count(preceding-sibling::*[1]/preceding::*)',
+-- 			precedingsiblingcount INT PATH 'count(preceding::*)',
+-- 			ancestor xml PATH 'ancestor-or-self::*'
+-- 	)
+-- 	UNION ALL
+-- 	SELECT 
+-- 		split_part(l, ':', -1) as l,
+-- 		CASE WHEN regexp_count(l, ':') != 1 THEN NULL ELSE split_part(l, ':', -2) END as prefix,
+-- 		parent,
+-- 		concat(parentnode, '[', parentprecedingsiblingcount,']:', parent) as parentpath,
+-- 		2 AS nt,
+-- 		NULL AS txt,
+-- 		NULL AS ns,
+--         NULL as dt,
+-- 		prev1,
+-- 		concat(prevnode, '[', prevprecedingsiblingcount,']:', prev1) as prevpath,
+-- 		concat(ancestor, '[', precedingsiblingcount,']:@', split_part(l, ':', -1)) as pathfromroot
+-- 	FROM xml_data,
+-- 	XMLTABLE(
+-- 		attr_pattern 
+-- 		PASSING xml_data.doc
+-- 		COLUMNS 
+-- 			l TEXT PATH 'name(.)',
+-- 			parent TEXT PATH 'local-name(..)',
+-- 			prev1 TEXT PATH 'local-name(preceding-sibling::*[1])', 
+-- 			parentnode xml PATH '../ancestor-or-self::*',
+-- 			parentprecedingsiblingcount INT PATH 'count(../preceding::*)',
+-- 			prevnode xml PATH 'preceding-sibling::*[1]/ancestor-or-self::*',
+-- 			prevprecedingsiblingcount INT PATH 'count(preceding-sibling::*[1]/preceding::*)',
+-- 			precedingsiblingcount INT PATH 'count(parent::*/preceding::*)',
+-- 			ancestor xml PATH 'ancestor-or-self::*'
+-- 	)
+-- 	UNION ALL
+-- 	SELECT 
+-- 		'#text' AS l,
+-- 		NULL as prefix,
+-- 		parent,
+-- 		concat(parentnode, '[', parentprecedingsiblingcount,']:@', attributeid) as parentpath,
+-- 		3 AS nt,
+-- 		txt,
+-- 		NULL AS ns,
+--         NULL as dt,
+-- 		prev1,
+-- 		concat(prevnode, '[', prevprecedingsiblingcount,']:', prev1) as prevpath,
+-- 		concat(ancestor, '[', precedingsiblingcount,']:', attributeid, ':', txt) as pathfromroot
+-- 	FROM xml_data,
+-- 	XMLTABLE(
+-- 		attr_pattern
+-- 		PASSING xml_data.doc
+-- 		COLUMNS 
+-- 			txt TEXT PATH '.',
+-- 			attributeid TEXT PATH 'local-name(.)',
+-- 			parent TEXT PATH 'local-name(..)',
+-- 			prev1 TEXT PATH 'local-name(preceding-sibling::*[1])', 
+-- 			parentnode xml PATH '../ancestor-or-self::*',
+-- 			parentprecedingsiblingcount INT PATH 'count(../preceding::*)',
+-- 			prevnode xml PATH 'preceding-sibling::*[1]/ancestor-or-self::*',
+-- 			prevprecedingsiblingcount INT PATH 'count(preceding-sibling::*[1]/preceding::*)',
+-- 			precedingsiblingcount INT PATH 'count(parent::*/preceding::*)',
+-- 			ancestor xml PATH 'ancestor-or-self::*'
+-- 	)	
+-- 	UNION ALL
+-- 	SELECT 
+-- 		'#text' AS l,
+-- 		NULL as prefix,
+-- 		parent,
+-- 		concat(parentnode, '[', parentprecedingsiblingcount,']:', parent) as parentpath,
+-- 		3 AS nt,
+-- 		txt,
+-- 		NULL AS ns,
+--         NULL as dt,
+-- 		prev1,
+-- 		concat(prevnode, '[', prevprecedingsiblingcount,']:', prev1) as prevpath,
+-- 		concat(ancestor, '[', precedingsiblingcount,']:', txt) as pathfromroot
+-- 	FROM xml_data,
+-- 	XMLTABLE(
+-- 		row_pattern2 
+-- 		PASSING xml_data.doc
+-- 		COLUMNS 
+-- 			txt TEXT PATH 'normalize-space(text())',
+-- 			parent TEXT PATH 'local-name(.)',
+-- 			prev1 TEXT PATH 'local-name(preceding-sibling::*[1])', 
+-- 			parentnode xml PATH './ancestor-or-self::*',
+-- 			parentprecedingsiblingcount INT PATH 'count(./preceding::*)',
+-- 			prevnode xml PATH 'preceding-sibling::*[1]/ancestor-or-self::*',
+-- 			prevprecedingsiblingcount INT PATH 'count(preceding-sibling::*[1]/preceding::*)',
+-- 			precedingsiblingcount INT PATH 'count(parent::*/preceding::*)',
+-- 			ancestor xml PATH 'ancestor-or-self::*'
+-- 	)
+-- 	WHERE length(txt) != 0
+-- )
+-- SELECT 
+-- 	r.xpath_id::int as id, p.xpath_id::int as parentid, q1.nt , q1.l , q1.prefix , q1.ns , q1.dt, pv.xpath_id::int as prev , q1.txt
+-- FROM q1
+-- LEFT JOIN roottbl r ON q1.pathfromroot = r.pathfromroot
+-- LEFT JOIN roottbl p ON q1.parentpath = p.pathfromroot
+-- LEFT JOIN roottbl pv ON q1.prevpath = pv.pathfromroot
+-- ORDER BY r.xpath_id;
+    
+-- END
+-- $$ LANGUAGE plpgsql;
+
+-- old changes
+
+CREATE FUNCTION sys.tsql_openxml_get_xmldoc(int)
+RETURNS xml
+AS 'babelfishpg_tsql', 'tsql_openxml_get_xmldoc'
+LANGUAGE C STRICT;
+
+
+
+
+
+-- CREATE FUNCTION sys.xmlhandle_get_document(document_handle integer)
+-- RETURNS xml
+-- AS 'babelfishpg_tsql', 'xmlhandle_get_document'
+-- LANGUAGE C STRICT;
+
+
+
+-- WITH 
+-- roottbl AS (
+--     SELECT row_number() over() - 1 as xpath_id, l
+--     FROM (
+--         WITH xml_data AS (
+--             SELECT '<ROOT><Customer1 CustomerID1="VINET1" ContactName1="Paul Henriot"><Order1 CustomerID2="VINET2" EmployeeID1="5" OrderDate1="1996-07-04T00:00:00"><OrderDetail1 OrderID1="10248" ProductID1="11" Quantity1="12"/><OrderDetail2 OrderID2="10249" ProductID2="42" Quantity2="10"/></Order1></Customer1><Customer2 CustomerID3="LILAS1" ContactName2="Carlos Gonzlez"><Order2 CustomerID4="LILAS2" EmployeeID2="3" OrderDate2="1996-08-16T00:00:00"><OrderDetail3 OrderID3="10283" ProductID3="72" Quantity3="3"/></Order2></Customer2></ROOT>'::xml AS doc
+--         )
+--         SELECT 
+--             l
+--         FROM xml_data,
+--         XMLTABLE('//*' 
+--             PASSING doc
+--             COLUMNS 
+--                 l TEXT PATH 'local-name(.)'
+--         )
+--         UNION ALL
+--         SELECT 
+--             l
+--         FROM xml_data,
+--         XMLTABLE('//@*' 
+--             PASSING doc
+--             COLUMNS 
+--                 l TEXT PATH 'local-name(.)'
+--         )
+--         UNION ALL
+--         SELECT 
+--             '#text' AS l
+--         FROM xml_data,
+--         XMLTABLE('//@*' 
+--             PASSING doc
+--             COLUMNS 
+--                 txt TEXT PATH '.'
+--         )
+--         UNION ALL
+--         SELECT 
+--             '#text' AS l
+--         FROM xml_data,
+--         XMLTABLE('//*' 
+--             PASSING doc
+--                     COLUMNS 
+--                         txt TEXT PATH 'normalize-space(text())'
+--         )
+--         WHERE length(txt) != 0
+--     )
+-- ), 
+-- q1 AS (
+--     WITH xml_data AS (
+--         SELECT '<ROOT><Customer1 CustomerID1="VINET1" ContactName1="Paul Henriot"><Order1 CustomerID2="VINET2" EmployeeID1="5" OrderDate1="1996-07-04T00:00:00"><OrderDetail1 OrderID1="10248" ProductID1="11" Quantity1="12"/><OrderDetail2 OrderID2="10249" ProductID2="42" Quantity2="10"/></Order1></Customer1><Customer2 CustomerID3="LILAS1" ContactName2="Carlos Gonzlez"><Order2 CustomerID4="LILAS2" EmployeeID2="3" OrderDate2="1996-08-16T00:00:00"><OrderDetail3 OrderID3="10283" ProductID3="72" Quantity3="3"/></Order2></Customer2></ROOT>'::xml AS doc
+--     )
+--     SELECT 
+--         split_part(l, ':', -1) as l,
+--         CASE WHEN regexp_count(l, ':') != 1 THEN NULL ELSE split_part(l, ':', -2) END as prefix,
+--         parent,
+--         1 AS nt,
+--         NULL AS txt,
+--         ns,
+--         prev
+--     FROM xml_data,
+--     XMLTABLE(
+--         '//*' 
+--         PASSING doc
+--         COLUMNS 
+--             l TEXT PATH 'name(.)',
+--             ns TEXT PATH 'namespace-uri(.)',
+--             parent TEXT PATH 'local-name(..)',
+--             prev TEXT PATH 'local-name(preceding-sibling::*[1])'
+--     )
+--     UNION ALL
+--     SELECT 
+--         split_part(l, ':', -1) as l,
+--         CASE WHEN regexp_count(l, ':') != 1 THEN NULL ELSE split_part(l, ':', -2) END as prefix,
+--         parent,
+--         2 AS nt,
+--         NULL AS txt,
+--         NULL AS ns,
+--         prev
+--     FROM xml_data,
+--     XMLTABLE(
+--         '//@*' 
+--         PASSING doc
+--         COLUMNS 
+--             l TEXT PATH 'name(.)',
+--             parent TEXT PATH 'local-name(..)',
+--             prev TEXT PATH 'local-name(preceding-sibling::*[1])'
+--     )
+--     UNION ALL
+--     SELECT 
+--         '#text' AS l,
+--         NULL as prefix,
+--         parent,
+--         3 AS nt,
+--         txt,
+--         NULL AS ns,
+--         prev
+--     FROM xml_data,
+--     XMLTABLE(
+--         '//@*' 
+--         PASSING doc
+--         COLUMNS 
+--             txt TEXT PATH '.',
+--             parent TEXT PATH 'local-name(..)',
+--             prev TEXT PATH 'local-name(preceding-sibling::*[1])'
+--     )
+--     UNION ALL
+--     SELECT 
+--         '#text' AS l,
+--         NULL as prefix,
+--         parent,
+--         3 AS nt,
+--         txt,
+--         NULL AS ns,
+--         prev
+--     FROM xml_data,
+--     XMLTABLE(
+--         '//*' 
+--         PASSING doc
+--                 COLUMNS 
+--                     txt TEXT PATH 'normalize-space(text())',
+--                     parent TEXT PATH 'local-name(..)',
+--                     prev TEXT PATH 'local-name(preceding-sibling::*[1])'
+--     )
+--     WHERE length(txt) != 0
+-- )
+-- SELECT 
+--     DISTINCT ON (r.xpath_id) r.xpath_id as id, p.xpath_id as parentid, q1.nt as nodetype, q1.l as localname, q1.prefix as prefix, q1.ns as namespaceuri, pv.xpath_id as prev, q1.txt as text
+-- FROM q1
+-- LEFT JOIN roottbl r ON q1.l = r.l
+-- LEFT JOIN roottbl p ON q1.parent = p.l
+-- LEFT JOIN roottbl pv ON q1.prev = pv.l
+-- ORDER BY r.xpath_id;
+
+
+-- WITH 
+-- roottbl AS (
+-- 	SELECT row_number() over() - 1 as xpath_id, l, attributeid, concat(ancestor, '[', prevsiblingcount,']', (':' || attributeid), ':', elementvalue) as pathfromroot
+-- 	FROM (
+-- 		WITH xml_data AS (
+-- 			SELECT '<Root><Child1>Value1</Child1><Child2>Value2</Child2></Root>'::xml AS doc
+-- 		)
+-- 		SELECT 
+-- 			l,
+-- 			ancestor,
+-- 			prevsiblingcount,
+-- 			NULL as attributeid,
+-- 			l as elementvalue
+-- 		FROM xml_data,
+-- 		XMLTABLE('//*' 
+-- 			PASSING doc
+-- 			COLUMNS 
+-- 				l TEXT PATH 'local-name(.)',
+-- 				ancestor xml PATH 'ancestor-or-self::*',
+-- 				prevsiblingcount INT PATH 'count(preceding::*)'
+-- 		)
+-- 		UNION ALL
+-- 		SELECT 
+-- 			l,
+-- 			ancestor,
+-- 			prevsiblingcount,
+-- 			NULL as attributeid,
+-- 			concat('@', l) as elementvalue
+-- 		FROM xml_data,
+-- 		XMLTABLE('//@*' 
+-- 			PASSING doc
+-- 			COLUMNS 
+-- 				l TEXT PATH 'local-name(.)',
+-- 				ancestor xml PATH 'ancestor-or-self::*',
+-- 				prevsiblingcount INT PATH 'count(parent::*/preceding::*)'
+-- 		)
+-- 		UNION ALL
+-- 		SELECT 
+-- 			'#text' AS l,
+-- 			ancestor,
+-- 			prevsiblingcount,
+-- 			attributeid,
+-- 			elementvalue
+-- 		FROM xml_data,
+-- 		XMLTABLE('//@*' 
+-- 			PASSING doc
+-- 			COLUMNS 
+-- 				elementvalue TEXT PATH '.',
+-- 				attributeid TEXT PATH 'local-name(.)',
+-- 				ancestor xml PATH 'ancestor-or-self::*',
+-- 				prevsiblingcount INT PATH 'count(parent::*/preceding::*)'
+-- 		)
+-- 		UNION ALL
+--         SELECT 
+-- 			'#comment' AS l,
+-- 			ancestor,
+-- 			prevsiblingcount,
+-- 			NULL as attributeid,
+-- 			elementvalue
+-- 		FROM xml_data,
+-- 		XMLTABLE('//*' 
+-- 			PASSING doc
+-- 			COLUMNS
+-- 				elementvalue TEXT PATH 'comment()',
+-- 				txt TEXT PATH 'normalize-space(text())',
+-- 				ancestor xml PATH 'ancestor-or-self::*',
+-- 				prevsiblingcount INT PATH 'count(parent::*/preceding::*)'
+-- 		)
+--         WHERE length(txt) != 0
+--         UNION ALL
+-- 		SELECT 
+-- 			'#text' AS l,
+-- 			ancestor,
+-- 			prevsiblingcount,
+-- 			NULL as attributeid,
+-- 			elementvalue
+-- 		FROM xml_data,
+-- 		XMLTABLE('//*' 
+-- 			PASSING doc
+-- 			COLUMNS
+-- 				elementvalue TEXT PATH '.',
+-- 				txt TEXT PATH 'normalize-space(text())',
+-- 				ancestor xml PATH 'ancestor-or-self::*',
+-- 				prevsiblingcount INT PATH 'count(parent::*/preceding::*)'
+-- 		)
+-- 		WHERE length(txt) != 0
+-- 	)
+-- ), 
+--  q1 AS (
+-- 	WITH xml_data AS (
+-- 		SELECT '<Root><Child1>Value1</Child1><Child2>Value2</Child2></Root>'::xml AS doc
+-- 	)
+-- 	SELECT 
+-- 		split_part(l, ':', -1) as l,
+-- 		CASE WHEN regexp_count(l, ':') != 1 THEN NULL ELSE split_part(l, ':', -2) END as prefix,
+-- 		parent,
+-- 		concat(parentnode, '[', parentprecedingsiblingcount,']:', parent) as parentpath,
+-- 		1 AS nt,
+-- 		NULL AS txt,
+-- 		ns,
+-- 		prev,
+-- 		concat(prevnode, '[', prevprecedingsiblingcount,']:', prev) as prevpath,
+-- 		concat(ancestor, '[', precedingsiblingcount,']:', split_part(l, ':', -1)) as pathfromroot
+-- 	FROM xml_data,
+-- 	XMLTABLE(
+-- 		'/Root/Child2[text()="Value2"] | /Root/Child2[text()="Value2"]//*' 
+-- 		PASSING doc
+-- 		COLUMNS 
+-- 			l TEXT PATH 'name(.)',
+-- 			ns TEXT PATH 'namespace-uri(.)',
+-- 			parent TEXT PATH 'local-name(..)',
+-- 			prev TEXT PATH 'local-name(preceding-sibling::*[1])', 
+-- 			parentnode xml PATH '../ancestor-or-self::*',
+-- 			parentprecedingsiblingcount INT PATH 'count(../preceding::*)',
+-- 			prevnode xml PATH 'preceding-sibling::*[1]/ancestor-or-self::*',
+-- 			prevprecedingsiblingcount INT PATH 'count(preceding-sibling::*[1]/preceding::*)',
+-- 			precedingsiblingcount INT PATH 'count(preceding::*)',
+-- 			ancestor xml PATH 'ancestor-or-self::*'
+-- 	)
+-- 	UNION ALL
+-- 	SELECT 
+-- 		split_part(l, ':', -1) as l,
+-- 		CASE WHEN regexp_count(l, ':') != 1 THEN NULL ELSE split_part(l, ':', -2) END as prefix,
+-- 		parent,
+-- 		concat(parentnode, '[', parentprecedingsiblingcount,']:', parent) as parentpath,
+-- 		2 AS nt,
+-- 		NULL AS txt,
+-- 		NULL AS ns,
+-- 		prev,
+-- 		concat(prevnode, '[', prevprecedingsiblingcount,']:', prev) as prevpath,
+-- 		concat(ancestor, '[', precedingsiblingcount,']:@', split_part(l, ':', -1)) as pathfromroot
+-- 	FROM xml_data,
+-- 	XMLTABLE(
+-- 		'/Root/Child2[text()="Value2"]//@*' 
+-- 		PASSING doc
+-- 		COLUMNS 
+-- 			l TEXT PATH 'name(.)',
+-- 			parent TEXT PATH 'local-name(..)',
+-- 			prev TEXT PATH 'local-name(preceding-sibling::*[1])', 
+-- 			parentnode xml PATH '../ancestor-or-self::*',
+-- 			parentprecedingsiblingcount INT PATH 'count(../preceding::*)',
+-- 			prevnode xml PATH 'preceding-sibling::*[1]/ancestor-or-self::*',
+-- 			prevprecedingsiblingcount INT PATH 'count(preceding-sibling::*[1]/preceding::*)',
+-- 			precedingsiblingcount INT PATH 'count(parent::*/preceding::*)',
+-- 			ancestor xml PATH 'ancestor-or-self::*'
+-- 	)
+-- 	UNION ALL
+-- 	SELECT 
+-- 		'#text' AS l,
+-- 		NULL as prefix,
+-- 		parent,
+-- 		concat(parentnode, '[', parentprecedingsiblingcount,']:@', attributeid) as parentpath,
+-- 		3 AS nt,
+-- 		txt,
+-- 		NULL AS ns,
+-- 		prev,
+-- 		concat(prevnode, '[', prevprecedingsiblingcount,']:', prev) as prevpath,
+-- 		concat(ancestor, '[', precedingsiblingcount,']:', attributeid, ':', txt) as pathfromroot
+-- 	FROM xml_data,
+-- 	XMLTABLE(
+-- 		'/Root/Child2[text()="Value2"]//@*' 
+-- 		PASSING doc
+-- 		COLUMNS 
+-- 			txt TEXT PATH '.',
+-- 			attributeid TEXT PATH 'local-name(.)',
+-- 			parent TEXT PATH 'local-name(..)',
+-- 			prev TEXT PATH 'local-name(preceding-sibling::*[1])', 
+-- 			parentnode xml PATH '../ancestor-or-self::*',
+-- 			parentprecedingsiblingcount INT PATH 'count(../preceding::*)',
+-- 			prevnode xml PATH 'preceding-sibling::*[1]/ancestor-or-self::*',
+-- 			prevprecedingsiblingcount INT PATH 'count(preceding-sibling::*[1]/preceding::*)',
+-- 			precedingsiblingcount INT PATH 'count(parent::*/preceding::*)',
+-- 			ancestor xml PATH 'ancestor-or-self::*'
+-- 	)	
+-- 	UNION ALL
+-- 	SELECT 
+-- 		'#text' AS l,
+-- 		NULL as prefix,
+-- 		parent,
+-- 		concat(parentnode, '[', parentprecedingsiblingcount,']:', parent) as parentpath,
+-- 		3 AS nt,
+-- 		txt,
+-- 		NULL AS ns,
+-- 		prev,
+-- 		concat(prevnode, '[', prevprecedingsiblingcount,']:', prev) as prevpath,
+-- 		concat(ancestor, '[', precedingsiblingcount,']:', txt) as pathfromroot
+-- 	FROM xml_data,
+-- 	XMLTABLE(
+-- 		'/Root/Child2[text()="Value2"]| /Root/Child2[text()="Value2"]//*' 
+-- 		PASSING doc
+-- 		COLUMNS 
+-- 			txt TEXT PATH 'normalize-space(text())',
+-- 			parent TEXT PATH 'local-name(.)',
+-- 			prev TEXT PATH 'local-name(preceding-sibling::*[1])', 
+-- 			parentnode xml PATH './ancestor-or-self::*',
+-- 			parentprecedingsiblingcount INT PATH 'count(./preceding::*)',
+-- 			prevnode xml PATH 'preceding-sibling::*[1]/ancestor-or-self::*',
+-- 			prevprecedingsiblingcount INT PATH 'count(preceding-sibling::*[1]/preceding::*)',
+-- 			precedingsiblingcount INT PATH 'count(parent::*/preceding::*)',
+-- 			ancestor xml PATH 'ancestor-or-self::*'
+-- 	)
+-- 	WHERE length(txt) != 0
+-- )
+
+-- SELECT 
+-- 	 r.xpath_id as id, p.xpath_id as parentid, q1.nt as nodetype, q1.l as localname, q1.ns as namespaceuri,  q1.txt as text , q1.parentpath
+-- FROM q1
+-- LEFT JOIN roottbl r ON q1.pathfromroot = r.pathfromroot
+-- LEFT JOIN roottbl p ON q1.parentpath = p.pathfromroot
+-- LEFT JOIN roottbl pv ON q1.prevpath = pv.pathfromroot
+-- ORDER BY r.xpath_id;
+
+
 CREATE OR REPLACE FUNCTION sys.sp_datatype_info_helper(
     IN odbcVer smallint,
     IN is_100 bool,
