@@ -6,12 +6,15 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT;
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
-
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 -- When xmltext is NULL and namespace is not given 
 DECLARE @hdoc INT;
 EXEC sp_xml_preparedocument @hdoc OUTPUT, NULL;
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- When xmltext is a valid xml and namespace is not given
@@ -20,12 +23,16 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child>value</child></root>';
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- When xmltext is invalid and namespaces is not given
 DECLARE @hdoc INT;
 EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child></root';
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- When xmltext and namespaces both are given (valid)
@@ -34,12 +41,16 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child>value</child></root>', '
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- When xmltext and namespaces both are given (invalid)
 DECLARE @hdoc INT;
 EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child></root', 'xmlns:ns1="http://example.com/ns1"/>';
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- When xmltext is valid but namespace invalid
@@ -48,12 +59,16 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child>value</child></root>', '
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 --When xmltext is invalid but namespace valid
 DECLARE @hdoc INT;  
 EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child></root', '<root xmlns:ns1="http://example.com/ns1"/>';
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- When xmltext is NULL and valid namespace
@@ -62,12 +77,16 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT, NULL, '<root xmlns:ns1="http://example
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- When xmltext is NULL and invalid namespace
 DECLARE @hdoc INT;
 EXEC sp_xml_preparedocument @hdoc OUTPUT, NULL, 'xmlns:ns1="http://example.com/ns1"/>'; 
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- When empty xml text is given
@@ -76,6 +95,8 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT,'', '<root xmlns:ns1="http://example.co
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- When empty namespace is given
 DECLARE @hdoc INT;
@@ -83,12 +104,16 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child>value</child></root>', '
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- When both xmltext and namespace are empty
 DECLARE @hdoc INT;
 EXEC sp_xml_preparedocument @hdoc OUTPUT,'', '';
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- When large handle is given
@@ -139,6 +164,8 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT, @xml_text, @xpath_namespaces;
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 --For complex xml texts 1
 DECLARE @hdoc INT;
@@ -160,6 +187,8 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT,
 </organization>';
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- For complex xml text2
@@ -183,6 +212,8 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT, @doc;
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- For complex namespaces
 DECLARE @hdoc INT;
@@ -200,6 +231,8 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT, '',
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 --When given xml text length is too large (above max limit)
 DECLARE @hdoc int;
@@ -208,6 +241,8 @@ EXEC sp_xml_preparedocument @hdoc output, @xml_text;
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- When namespace length is too large (above max limit)
 DECLARE @hdoc int;
@@ -215,6 +250,8 @@ DECLARE @namespace_text varchar(max) = '<root ' + repeat('xmlns:ns1="http://exam
 EXEC sp_xml_preparedocument @hdoc output, NULL, @namespace_text;
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 --Test with parameter by name syntax 1
@@ -233,12 +270,16 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT,
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- Double quoted string 
 DECLARE @hdoc INT;
 EXEC sp_xml_preparedocument @hdoc OUTPUT, "<root><child>value</child></root>";
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- Impact of rollback on prepared handle
@@ -249,6 +290,8 @@ SELECT @hdoc AS handle_before_rollback;
 ROLLBACK TRANSACTION;
 -- Handle will be invalid after rollback
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- Impact of statement terminating/transaction abort errors
@@ -277,6 +320,8 @@ EXEC sp_xml_preparedocument @hdoc output, @xml_text;
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- Test with very large XML documents
 DECLARE @hdoc int;
@@ -284,6 +329,8 @@ DECLARE @xml_text varchar(max) = '<root>' + repeat('<child></child>', 200000) + 
 EXEC sp_xml_preparedocument @hdoc output, @xml_text;
 SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- impact of reset connection
@@ -294,10 +341,14 @@ INSERT INTO handle_store VALUES (@hdoc);
 -- This resets the connection
 EXEC sys.sp_reset_connection;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 -- Handle will be invalid after reset
 DECLARE @stored_hdoc INT;
 SELECT @stored_hdoc = handle_id FROM handle_store;
 EXEC sp_xml_removedocument @stored_hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- Now handles will start from 1
@@ -309,4 +360,6 @@ GO
 -- Prepare/drop XML inside procedure
 -- Execute procedure and verify handle
 EXEC test_xml_proc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
