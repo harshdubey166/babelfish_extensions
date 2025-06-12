@@ -5,6 +5,8 @@ EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child>value</child></root>', '
 EXEC sp_xml_removedocument @hdoc;
 EXEC sp_xml_removedocument @hdoc;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- Removing negative handle
 DECLARE @hdoc INT= -1;

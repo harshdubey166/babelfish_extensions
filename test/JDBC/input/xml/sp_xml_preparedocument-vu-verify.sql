@@ -303,6 +303,8 @@ GO
 -- This will cause an error and abort the transaction
 SELECT FROM;
 GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
 
 -- Verify handle still works or not
 DECLARE @hdoc INT;
@@ -311,6 +313,8 @@ SELECT @hdoc AS handle_after_error;
 -- calculating handle_before_error and that should not exist
 DECLARE @stored_hdoc INT = @hdoc - 2;
 EXEC sp_xml_removedocument @stored_hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- Test with large XML documents
@@ -338,6 +342,15 @@ DECLARE @hdoc INT;
 EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child>value</child></root>';
 SELECT @hdoc as handle;
 INSERT INTO handle_store VALUES (@hdoc);
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
+
+-- create a temp table
+CREATE TABLE #temp_xml_table (a xml);
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+GO
+
 -- This resets the connection
 EXEC sys.sp_reset_connection;
 GO
@@ -355,6 +368,9 @@ GO
 DECLARE @hdoc INT;
 EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child>value</child></root>';
 SELECT @hdoc as handle;
+EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
 
 -- Prepare/drop XML inside procedure
