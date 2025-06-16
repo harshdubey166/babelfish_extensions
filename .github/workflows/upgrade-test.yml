@@ -83,6 +83,13 @@ jobs:
         if: always() && steps.setup-upgrade-ver-ca.outcome == 'success' 
         uses: ./.github/composite-actions/upgrade-version
 
+      - name: Setup upterm session
+        if: always()
+        uses: lhotari/action-upterm@v1
+        timeout-minutes: 120
+        with:
+          limit-access-to-actor: true
+
       # Due to some action/checkout's in previous step the dynamically generated upgrade-version composite action isn't available,
       # hence to avoid error in post action step recreated the upgrade-version composite action
       - name: Recreate Upgrade Version Composite Action
