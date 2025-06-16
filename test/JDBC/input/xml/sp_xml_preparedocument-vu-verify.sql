@@ -348,20 +348,20 @@ GO
 -- create a temp table
 CREATE TABLE #temp_xml_table (a xml);
 GO
-select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+select * FROM sys.babelfish_get_enr_list()
 GO
 
 -- This resets the connection
 EXEC sys.sp_reset_connection;
 GO
-select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+select * FROM sys.babelfish_get_enr_list()
 GO
 -- Handle will be invalid after reset
 DECLARE @stored_hdoc INT;
 SELECT @stored_hdoc = handle_id FROM handle_store;
 EXEC sp_xml_removedocument @stored_hdoc;
 GO
-select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+select * FROM sys.babelfish_get_enr_list()
 GO
 
 -- Now handles will start from 1
