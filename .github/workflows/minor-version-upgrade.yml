@@ -158,8 +158,6 @@ jobs:
         if: always()
         uses: lhotari/action-upterm@v1
         timeout-minutes: 120
-        with:
-          limit-access-to-actor: true
           
       - name: Upload Log
         if: always()
