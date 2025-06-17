@@ -75,17 +75,3 @@ runs:
         export scheduleFile=upgrade/$base_dir/schedule
         mvn -B -ntp test
       shell: bash
-      
-    - name: Setup upterm session
-      if: always()
-      uses: lhotari/action-upterm@v1
-      timeout-minutes: 120
-      with:
-        limit-access-to-actor: true
-
-    - name: Cleanup babelfish database
-      id: cleanup
-      if: always() && steps.jdbc-verify-tests.outcome == 'success' && inputs.is_final_ver == 'true'
-      run: |
-        sudo ~/${{ inputs.pg_new_dir }}/bin/psql -d postgres -U runner -v user="jdbc_user" -v db="babelfish_db" -f .github/scripts/cleanup_babelfish_database.sql
-      shell: bash
