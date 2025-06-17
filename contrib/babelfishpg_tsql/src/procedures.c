@@ -4495,7 +4495,7 @@ create_xml_handle_temp_table()
 	int                 save_sec_context;
 	int                 saved_dialect = sql_dialect;
 	ObjectAddress       address;
-	QueryEnvironment   *saved_queryEnv = currentQueryEnv;
+	// QueryEnvironment   *saved_queryEnv = currentQueryEnv;
 	MemoryContext       oldContext;
 	char               *table_name;
 
@@ -4504,7 +4504,7 @@ create_xml_handle_temp_table()
 	relation = makeRangeVar(NULL, table_name, -1);
 
 	/* Switch to the top-level query environment */
-	currentQueryEnv = topLevelQueryEnv;
+	// currentQueryEnv = topLevelQueryEnv;
 
 	/* This makes it temporary table */
 	relation->relpersistence = RELPERSISTENCE_TEMP;
@@ -4550,7 +4550,7 @@ create_xml_handle_temp_table()
 		SetUserIdAndSecContext(save_userid, save_sec_context);
 		sql_dialect = saved_dialect;
 		/* Restore the original query environment */
-		currentQueryEnv = saved_queryEnv;
+		// currentQueryEnv = saved_queryEnv;
 	}
 	PG_END_TRY();
 
