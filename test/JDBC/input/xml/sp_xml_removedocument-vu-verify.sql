@@ -2,11 +2,20 @@
 -- creating a handle and then removing it, 2ND execution of this will throw an error as the handle is removed by first remove procedure
 DECLARE @hdoc INT; 
 EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child>value</child></root>', '<root xmlns:ns1="http://example.com/ns1"/>';
+SELECT @hdoc as handle;
 EXEC sp_xml_removedocument @hdoc;
 EXEC sp_xml_removedocument @hdoc;
 GO
-select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+select * FROM sys.babelfish_get_enr_list()
 GO
+
+DECLARE @hdoc INT; 
+EXEC sp_xml_preparedocument @hdoc OUTPUT, '<root><child>value</child></root>', '<root xmlns:ns1="http://example.com/ns1"/>';
+SELECT @hdoc as handle;
+EXEC sp_xml_removedocument @hdoc;
+GO
+select * FROM sys.babelfish_get_enr_list()
+go
 
 -- Removing negative handle
 DECLARE @hdoc INT= -1;

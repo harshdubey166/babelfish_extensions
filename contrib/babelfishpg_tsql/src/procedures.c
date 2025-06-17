@@ -4839,7 +4839,7 @@ reset_cached_xml_handle()
 	/* Reset the table name */
 	xml_handle_temp_table_name = NULL;
 
-	ENRDropTempTables(currentQueryEnv);
+	pltsql_remove_current_query_env();
 }
 
 Datum
