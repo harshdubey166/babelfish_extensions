@@ -4504,7 +4504,8 @@ create_xml_handle_temp_table()
 	relation = makeRangeVar(NULL, table_name, -1);
 
 	/* Switch to the top-level query environment */
-	currentQueryEnv = create_queryEnv2(TopMemoryContext, true);
+	// currentQueryEnv = create_queryEnv2(TopMemoryContext, true);
+	currentQueryEnv = topLevelQueryEnv;
 
 	/* This makes it temporary table */
 	relation->relpersistence = RELPERSISTENCE_TEMP;
