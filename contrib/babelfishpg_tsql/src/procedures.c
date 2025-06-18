@@ -4843,7 +4843,7 @@ reset_cached_xml_handle()
 	PG_TRY();
 	{
 		currentQueryEnv = xml_queryEnv;
-		pltsql_remove_current_query_env();
+		remove_queryEnv();
 	}
 	PG_FINALLY();
 	{
