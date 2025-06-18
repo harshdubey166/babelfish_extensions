@@ -14,9 +14,9 @@ GO
 CREATE TABLE #temp_table_create(a int, b nvarchar(200))
 GO
 
-select count(*) FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+select count(*) FROM sys.babelfish_get_enr_list()
 GO
-select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
+select * FROM sys.babelfish_get_enr_list()
 GO
 
 select count(*) FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%_index'

@@ -379,3 +379,6 @@ EXEC test_xml_proc;
 GO
 select * FROM sys.babelfish_get_enr_list() WHERE relname LIKE '#pg_toast_%'
 GO
+
+EXEC sys.sp_reset_connection;
+go

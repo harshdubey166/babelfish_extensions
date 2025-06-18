@@ -117,6 +117,7 @@ static bool is_supported_case_sp_describe_undeclared_parameters = true;
 const  int           XML_HANDLE_COUNTER_START = 0;
 const  int           XML_HANDLE_COUNTER_INVALID = INT_MAX / 2;
 static int           current_xml_handle_counter;
+QueryEnvironment    *xml_queryEnv = NULL;
 Bitmapset           *active_xml_handles_counter = NULL;
 static char         *xml_handle_temp_table_name = NULL;
 int                  get_next_xml_handle_counter(void);
@@ -4359,7 +4360,7 @@ get_next_xml_handle_counter()
 			/* Only check the table if it exists using ENR lookup */
 			if (xml_handle_temp_table_name != NULL)
 			{
-				enr = get_ENR(currentQueryEnv, xml_handle_temp_table_name, true);
+				enr = get_ENR(xml_queryEnv, xml_handle_temp_table_name, true);
 				if (enr)
 				{
 					relation = relation_open(enr->md.reliddesc, AccessShareLock);
@@ -4496,7 +4497,6 @@ create_xml_handle_temp_table()
 	int                 saved_dialect = sql_dialect;
 	ObjectAddress       address;
 	QueryEnvironment   *saved_queryEnv = currentQueryEnv;
-	// QueryEnvironment   *xml_queryEnv;
 	MemoryContext       oldContext;
 	char               *table_name;
 
@@ -4505,9 +4505,7 @@ create_xml_handle_temp_table()
 	relation = makeRangeVar(NULL, table_name, -1);
 
 	/* Switch to the top-level query environment */
-	// currentQueryEnv = topLevelQueryEnv;
-	// xml_queryEnv = create_queryEnv2(TopMemoryContext, false);
-	currentQueryEnv = create_queryEnv2(TopMemoryContext, true);
+	xml_queryEnv = create_queryEnv2(TopMemoryContext, true);
 
 	/* This makes it temporary table */
 	relation->relpersistence = RELPERSISTENCE_TEMP;
@@ -4596,7 +4594,7 @@ insert_xml_handle_entry(xmltype *xml_data, xmltype *ns_data, int xml_data_length
 	/* Check if the table exists using ENR lookup */
 	if (xml_handle_temp_table_name != NULL)
 	{
-		enr = get_ENR(currentQueryEnv, xml_handle_temp_table_name, true);
+		enr = get_ENR(xml_queryEnv, xml_handle_temp_table_name, true);
 		if (enr)
 		{
 			relation = relation_open(enr->md.reliddesc, RowExclusiveLock);
@@ -4612,7 +4610,7 @@ insert_xml_handle_entry(xmltype *xml_data, xmltype *ns_data, int xml_data_length
 		/* Look up the newly created table */
 		if (xml_handle_temp_table_name != NULL)
 		{
-			enr = get_ENR(currentQueryEnv, xml_handle_temp_table_name, true);
+			enr = get_ENR(xml_queryEnv, xml_handle_temp_table_name, true);
 			if (enr)
 			{
 				relation = relation_open(enr->md.reliddesc, RowExclusiveLock);
@@ -4758,7 +4756,7 @@ delete_xml_handle_entry(int document_id)
 	/* Check if the table exists using ENR lookup by name */
 	if (xml_handle_temp_table_name != NULL)
 	{
-		enr = get_ENR(currentQueryEnv, xml_handle_temp_table_name, true);
+		enr = get_ENR(xml_queryEnv, xml_handle_temp_table_name, true);
 		if (enr)
 		{
 			relation = relation_open(enr->md.reliddesc, RowExclusiveLock);
@@ -4829,6 +4827,8 @@ delete_xml_handle_entry(int document_id)
 void
 reset_cached_xml_handle()
 {
+	QueryEnvironment   *saved_queryEnv = currentQueryEnv;
+
 	/* Reset active handles bitmap */
 	bms_free(active_xml_handles_counter);
 	active_xml_handles_counter = NULL;
@@ -4839,7 +4839,17 @@ reset_cached_xml_handle()
 	/* Reset the table name */
 	xml_handle_temp_table_name = NULL;
 
-	pltsql_remove_current_query_env();
+	/* Reset the query environment */
+	PG_TRY();
+	{
+		currentQueryEnv = xml_queryEnv;
+		remove_queryEnv();
+	}
+	PG_FINALLY();
+	{
+		currentQueryEnv = saved_queryEnv;
+	}
+	PG_END_TRY();
 }
 
 Datum
