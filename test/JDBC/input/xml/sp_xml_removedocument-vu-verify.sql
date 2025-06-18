@@ -20,3 +20,6 @@ GO
 DECLARE @hdoc INT=null;
 EXEC sp_xml_removedocument @hdoc;
 GO
+
+EXEC sys.sp_reset_connection;
+GO

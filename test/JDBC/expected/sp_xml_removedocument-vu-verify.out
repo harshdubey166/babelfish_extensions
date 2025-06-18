@@ -36,3 +36,6 @@ GO
 
 ~~ERROR (Message: Could not find prepared statement with handle NULL)~~
 
+
+EXEC sys.sp_reset_connection;
+GO

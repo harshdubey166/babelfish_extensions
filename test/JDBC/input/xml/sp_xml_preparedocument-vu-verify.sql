@@ -310,3 +310,6 @@ GO
 -- Execute procedure and verify handle
 EXEC test_xml_proc;
 GO
+
+EXEC sys.sp_reset_connection;
+GO
